@@ -4,13 +4,14 @@ import edu.princeton.cs.algs4.Stopwatch;
 import edu.princeton.cs.algs4.StdOut;
 
 public class PercolationStats {
+
     private final double[] threshold;
     private final double mean;
     private final double stddev;
 
     public PercolationStats(int n, int trials) {
         if (n <= 0 || trials <= 0) {
-            throw new IllegalArgumentException("Input of n or trials out of range");
+            throw new IllegalArgumentException("n and trials must be positive");
         }
         threshold = new double[trials];
         for (int i = 0; i < trials; i++) {
@@ -47,11 +48,12 @@ public class PercolationStats {
     }
 
     public static void main(String[] args) {
-        Stopwatch watch = new Stopwatch();
-
         int n = Integer.parseInt(args[0]);
         int trials = Integer.parseInt(args[1]);
+
+        Stopwatch watch = new Stopwatch();
         PercolationStats stats = new PercolationStats(n, trials);
+        double time = watch.elapsedTime();
 
         StdOut.println("mean                    = " + stats.mean());
         StdOut.println("stddev                  = " + stats.stddev());
@@ -60,6 +62,6 @@ public class PercolationStats {
                        + ", "
                        + stats.confidenceHi()
                        + "]");
-        StdOut.println("elapsed time (s)        = " + watch.elapsedTime());
+        StdOut.println("elapsed time (s)        = " + time);
     }
 }

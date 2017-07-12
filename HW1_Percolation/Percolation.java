@@ -3,22 +3,19 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
 
     private final int N;
+    private final boolean[] isOpen;
     private final WeightedQuickUnionUF uf;
     private final WeightedQuickUnionUF ufb;
-    private boolean[] isOpened;
     private int nOpenSites;
 
     public Percolation(int n) {
         if (n <= 0) {
-            throw new IllegalArgumentException("n is not positive");
+            throw new IllegalArgumentException("n must be positive: " + n);
         }
         N = n;
+        isOpen = new boolean[n * n + 1];
         uf = new WeightedQuickUnionUF(n * n + 1);
         ufb = new WeightedQuickUnionUF(n * n + 2);
-        isOpened = new boolean[n * n + 1];
-        for (int i = 0; i < isOpened.length; i++) {
-            isOpened[i] = false;
-        }
         nOpenSites = 0;
     }
 
@@ -34,8 +31,8 @@ public class Percolation {
 
     public void open(int row, int col) {
         int i = toIndex(row, col);
-        if (isOpened[i]) return;
-        isOpened[i] = true;
+        if (isOpen[i]) return;
+        isOpen[i] = true;
         nOpenSites++;
         connectNeighboringOpenSites(row, col);
     }
@@ -46,36 +43,36 @@ public class Percolation {
         if (row == 1) {
             uf.union(0, i);
             ufb.union(0, i);
-        } else if (isOpened[i - N]) {
+        } else if (isOpen[i - N]) {
             uf.union(i, i - N);
             ufb.union(i, i - N);
         }
 
         if (row == N) {
             ufb.union(i, N * N + 1);
-        } else if (isOpened[i + N]) {
+        } else if (isOpen[i + N]) {
             uf.union(i, i + N);
             ufb.union(i, i + N);
         }
 
-        if (col > 1 && isOpened[i - 1]) {
-            uf.union(i - 1, i);
-            ufb.union(i - 1, i);
+        if (col > 1 && isOpen[i - 1]) {
+            uf.union(i, i - 1);
+            ufb.union(i, i - 1);
         }
 
-        if (col < N && isOpened[i + 1]) {
+        if (col < N && isOpen[i + 1]) {
             uf.union(i, i + 1);
             ufb.union(i, i + 1);
         }
     }
 
     public boolean isOpen(int row, int col) {
-        return isOpened[toIndex(row, col)];
+        return isOpen[toIndex(row, col)];
     }
 
     public boolean isFull(int row, int col) {
         int i = toIndex(row, col);
-        return isOpened[i] && uf.connected(0, i);
+        return isOpen[i] && uf.connected(0, i);
     }
 
     public int numberOfOpenSites() {
