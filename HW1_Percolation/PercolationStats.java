@@ -42,9 +42,7 @@ public class PercolationStats {
         while (!expt.percolates()) {
             int row = StdRandom.uniform(1, n + 1);
             int col = StdRandom.uniform(1, n + 1);
-            if (!expt.isOpen(row, col)) {
-                expt.open(row, col);
-            }
+            expt.open(row, col);
         }
     }
 
