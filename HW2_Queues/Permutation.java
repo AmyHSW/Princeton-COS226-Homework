@@ -4,6 +4,7 @@ import edu.princeton.cs.algs4.StdOut;
 public class Permutation {
     public static void main(String[] args) {
         int k = Integer.parseInt(args[0]);
+        if (k < 0) throw new IllegalArgumentException("k should not be negative: " + k);
         RandomizedQueue<String> queue = new RandomizedQueue<String>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();

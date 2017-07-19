@@ -9,6 +9,7 @@ public class Deque<Item> implements Iterable<Item> {
     private Node first, last;
 
     private class Node {
+        private Node pre;
         private Item item;
         private Node next;
     }
@@ -29,49 +30,51 @@ public class Deque<Item> implements Iterable<Item> {
 
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node oldfirst = first;
-        first = new Node();
-        first.item = item;
-        first.next = oldfirst;
-        if (isEmpty()) last = first;
+        Node newfirst = new Node();
+        newfirst.item = item;
+        newfirst.next = first;
+        if (isEmpty()) last = newfirst;
+        else first.pre = newfirst;
+        first = newfirst;
         n++;
     }
 
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node oldlast = last;
-        last = new Node();
-        last.item = item;
-        last.next = null;
-        if (isEmpty()) first = last;
-        else oldlast.next = last;
+        Node newlast = new Node();
+        newlast.item = item;
+        newlast.pre = last;
+        if (isEmpty()) first = newlast;
+        else last.next = newlast;
+        last = newlast;
         n++;
     }
 
     public Item removeFirst() {
         if (isEmpty()) throw new NoSuchElementException();
         Item item = first.item;
-        first = first.next;
         n--;
-        if (isEmpty()) last = null;
+        if (isEmpty()) {
+            first = null;
+            last = null;
+        } else {
+            first = first.next;
+            first.pre = null;
+        }
         return item;
     }
 
     public Item removeLast() {
         if (isEmpty()) throw new NoSuchElementException();
-        Node newlast = first;
-        if (newlast.next == null) {
-            newlast = null;
+        Item item = last.item;
+        n--;
+        if (isEmpty()) {
+            last = null;
             first = null;
         } else {
-            while (newlast.next.next != null) {
-                newlast = newlast.next;
-            }
-            newlast.next = null;
+            last = last.pre;
+            last.next = null;
         }
-        Item item = last.item;
-        last = newlast;
-        n--;
         return item;
     }
 
