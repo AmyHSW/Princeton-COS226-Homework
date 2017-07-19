@@ -43,9 +43,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         if (isEmpty()) throw new NoSuchElementException();
         int r = StdRandom.uniform(n);
         Item item = a[r];
-        for (int i = r; i < n - 1; i++) {
-            a[i] = a[i + 1];
-        }
+        a[r] = a[n - 1];
         a[--n] = null;
         if (n > 0 && n == a.length / 4) resize(a.length / 2);
         return item;
