@@ -40,10 +40,10 @@ public class Point implements Comparable<Point> {
     }
 
     public Comparator<Point> slopeOrder() {
-        return new BySlope();
+        return new SlopeOrder();
     }
 
-    private class BySlope implements Comparator<Point> {
+    private class SlopeOrder implements Comparator<Point> {
         public int compare(Point p1, Point p2) {
             double s1 = Point.this.slopeTo(p1);
             double s2 = Point.this.slopeTo(p2);
