@@ -6,17 +6,18 @@ import edu.princeton.cs.algs4.StdOut;
 public class Deque<Item> implements Iterable<Item> {
 
     private int n;
-    private Node first, last;
+    private Node dummy;
 
     private class Node {
-        private Node pre;
+        private Node prev;
         private Item item;
         private Node next;
     }
 
     public Deque() {
-        first = null;
-        last = null;
+        dummy = new Node();;
+        dummy.prev = dummy;
+        dummy.next = dummy;
         n = 0;
     }
 
@@ -30,51 +31,41 @@ public class Deque<Item> implements Iterable<Item> {
 
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node newfirst = new Node();
-        newfirst.item = item;
-        newfirst.next = first;
-        if (isEmpty()) last = newfirst;
-        else first.pre = newfirst;
-        first = newfirst;
+        Node node = new Node();
+        node.item = item;
+        node.next = dummy.next;
+        dummy.next = node;
+        node.prev = dummy;
+        node.next.prev = node;
         n++;
     }
 
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node newlast = new Node();
-        newlast.item = item;
-        newlast.pre = last;
-        if (isEmpty()) first = newlast;
-        else last.next = newlast;
-        last = newlast;
+        Node node = new Node();
+        node.item = item;
+        node.next = dummy;
+        dummy.prev.next = node;
+        node.prev = dummy.prev;
+        dummy.prev = node;
         n++;
     }
 
     public Item removeFirst() {
         if (isEmpty()) throw new NoSuchElementException();
-        Item item = first.item;
+        Item item = dummy.next.item;
+        dummy.next = dummy.next.next;
+        dummy.next.prev = dummy;
         n--;
-        if (isEmpty()) {
-            first = null;
-            last = null;
-        } else {
-            first = first.next;
-            first.pre = null;
-        }
         return item;
     }
 
     public Item removeLast() {
         if (isEmpty()) throw new NoSuchElementException();
-        Item item = last.item;
+        Item item = dummy.prev.item;
+        dummy.prev = dummy.prev.prev;
+        dummy.prev.next = dummy;
         n--;
-        if (isEmpty()) {
-            last = null;
-            first = null;
-        } else {
-            last = last.pre;
-            last.next = null;
-        }
         return item;
     }
 
@@ -84,10 +75,10 @@ public class Deque<Item> implements Iterable<Item> {
 
     private class ListIterator implements Iterator<Item> {
 
-        private Node current = first;
+        private Node current = dummy.next;
 
         public boolean hasNext() {
-            return current != null;
+            return current != dummy;
         }
 
         public void remove() {
