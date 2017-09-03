@@ -6,12 +6,14 @@ public class Outcast {
     private final WordNet wordnet;
 
     public Outcast(WordNet wordnet) {
-        if (wordnet == null) throw new IllegalArgumentException();
+        if (wordnet == null) {
+            throw new IllegalArgumentException("wordnet is null");
+        }
         this.wordnet = wordnet;
     }
 
     public String outcast(String[] nouns) {
-        if (nouns == null) throw new IllegalArgumentException();
+        validateNouns(nouns);
         int len = nouns.length;
         int maxdist = -1;
         String outcast = null;
@@ -19,7 +21,6 @@ public class Outcast {
             String word = nouns[i];
             int dist = 0;
             for (int j = 0; j < len; j++) {
-                if (i == j) continue;
                 dist += wordnet.distance(word, nouns[j]);
             }
             if (dist > maxdist) {
@@ -28,6 +29,20 @@ public class Outcast {
             }
         }
         return outcast;
+    }
+
+    private void validateNouns(String[] nouns) {
+        if (nouns == null) {
+            throw new IllegalArgumentException("nouns is null");
+        }
+        int len = nouns.length;
+        for (int i = 0; i < len; i++) {
+            if (!wordnet.isNoun(nouns[i])) {
+                throw new IllegalArgumentException("nouns contains a noun "
+                                                   + nouns[i]
+                                                   + " that is not in wordnet");
+            }
+        }
     }
 
     public static void main(String[] args) {

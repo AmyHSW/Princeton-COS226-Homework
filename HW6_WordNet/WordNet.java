@@ -3,6 +3,7 @@ import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.Bag;
 import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
@@ -14,20 +15,46 @@ public class WordNet {
     private final ShortestCommonAncestor sca;
 
     public WordNet(String synsets, String hypernyms) {
-        if (synsets == null || hypernyms == null) throw new IllegalArgumentException();
+        if (synsets == null) {
+            throw new IllegalArgumentException("synsets is null");
+        }
+        if (hypernyms == null) {
+            throw new IllegalArgumentException("hypernyms is null");
+        }
 
-        In synIn = new In(synsets);
-        String[] synLines = synIn.readAllLines();
+        String[] synLines = readFileLines(synsets);
+        String[] hypLines = readFileLines(hypernyms);
 
-        int V = synLines.length;
+        int V = synLines.length;;
         this.synsets = new String[V];
         bst = new RedBlackBST<String, Bag<Integer>>();
+        G = new Digraph(V);
+
+        buildNounsBST(synLines);
+        buildDigraph(hypLines);
+
+        sca = new ShortestCommonAncestor(G);
+    }
+
+    private String[] readFileLines(String fileName) {
+        try {
+            In in = new In(fileName);
+            return in.readAllLines();
+        } catch (NoSuchElementException e) {
+            throw new IllegalArgumentException("invalid file name in Wordnet constructor", e);
+        }
+    }
+
+    private void buildNounsBST(String[] synLines) {
+        int V = synLines.length;
         for (int i = 0; i < V; i++) {
             String line = synLines[i];
             int begin = line.indexOf(",");
             int end = line.indexOf(",", begin + 1);
+            //Store synsets in String[] synsets
             String syn = line.substring(begin + 1, end);
-            this.synsets[i] = syn;
+            synsets[i] = syn;
+
             StringTokenizer st = new StringTokenizer(syn);
             while (st.hasMoreTokens()) {
                 String noun = st.nextToken();
@@ -41,11 +68,10 @@ public class WordNet {
                 }
             }
         }
+    }
 
-        G = new Digraph(V);
-        In hypIn = new In(hypernyms);
-        String[] hypLines = hypIn.readAllLines();
-
+    private void buildDigraph(String[] hypLines) {
+        int V = hypLines.length;
         for (int i = 0; i < V; i++) {
             String line = hypLines[i];
             int begin = line.indexOf(",");
@@ -56,7 +82,6 @@ public class WordNet {
                 G.addEdge(i, hyp);
             }
         }
-        sca = new ShortestCommonAncestor(G);
     }
 
     public Iterable<String> nouns() {
@@ -64,18 +89,28 @@ public class WordNet {
     }
 
     public boolean isNoun(String word) {
-        if (word == null) throw new IllegalArgumentException();
+        if (word == null) {
+            throw new IllegalArgumentException("word is null");
+        }
         return bst.contains(word);
     }
 
     public String sca(String noun1, String noun2) {
-        if (!isNoun(noun1) || !isNoun(noun2)) throw new IllegalArgumentException();
+        validateNoun(noun1);
+        validateNoun(noun2);
         return synsets[sca.ancestor(bst.get(noun1), bst.get(noun2))];
     }
 
     public int distance(String noun1, String noun2) {
-        if (!isNoun(noun1) || !isNoun(noun2)) throw new IllegalArgumentException();
+        validateNoun(noun1);
+        validateNoun(noun2);
         return sca.length(bst.get(noun1), bst.get(noun2));
+    }
+
+    private void validateNoun(String noun) {
+        if (!isNoun(noun)) {
+            throw new IllegalArgumentException("noun " + noun + " is not a WordNet noun");
+        }
     }
 
     public static void main(String[] args) {
