@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.Picture;
-import edu.princeton.cs.algs4.StdOut;
 import java.awt.Color;
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Stopwatch;
 
 public class SeamCarver {
 
@@ -16,18 +17,16 @@ public class SeamCarver {
     }
 
     private Color[][] color(Picture picture) {
-        int W = picture.width();
-        int H = picture.height();
-        Color[][] mat = new Color[W][H];
+        int W = picture.width(), H = picture.height();
+        Color[][] c = new Color[W][H];
         for (int i = 0; i < W; i++)
             for (int j = 0; j < H; j++)
-                mat[i][j] = picture.get(i, j);
-        return mat;
+                c[i][j] = picture.get(i, j);
+        return c;
     }
 
     public int[] findHorizontalSeam() {
-        int W = picture.width();
-        int H = picture.height();
+        int W = picture.width(), H = picture.height();
 
         double[][] energy = new double[W][H];
         double[][] distTo = new double[W][H];
@@ -51,8 +50,7 @@ public class SeamCarver {
     }
 
     private void initArrays(double[][] energy, double[][] distTo, int[][] pixelTo) {
-        int W = picture.width();
-        int H = picture.height();
+        int W = picture.width(), H = picture.height();
         for (int i = 0; i < W; i++) {
             for (int j = 0; j < H; j++) {
                 energy[i][j] = energy(i, j);
@@ -70,25 +68,28 @@ public class SeamCarver {
     }
 
     private void validate(int x, int y) {
-        int W = picture.width();
-        int H = picture.height();
+        int W = picture.width(), H = picture.height();
         if (x < 0 || x > W - 1) {
-            throw new IllegalArgumentException("x " + x + " is not between 0 and " + (W - 1));
+            throw new IllegalArgumentException("x " + x
+                                               + " is not between 0 and " + (W - 1));
         }
         if (y < 0 || y > H - 1) {
-            throw new IllegalArgumentException("y " + y + " is not between 0 and " + (H - 1));
+            throw new IllegalArgumentException("y " + y
+                                               + " is not between 0 and " + (H - 1));
         }
     }
 
     private double gradSquared(int x1, int y1, int x2, int y2) {
-        int W = picture.width();
-        int H = picture.height();
+        int W = picture.width(), H = picture.height();
+
         if (x1 < 0) x1 = W - 1;
         if (x2 > W - 1) x2 = 0;
         if (y1 < 0) y1 = H - 1;
         if (y2 > H - 1) y2 = 0;
+
         Color color1 = color[x1][y1];
         Color color2 = color[x2][y2];
+
         int RedDiff = color1.getRed() - color2.getRed();
         int GreenDiff = color1.getGreen() - color2.getGreen();
         int BlueDiff = color1.getBlue() - color2.getBlue();
@@ -117,15 +118,21 @@ public class SeamCarver {
 
     public void removeHorizontalSeam(int[] seam) {
         validate(seam);
-        int W = picture.width();
-        int H = picture.height();
+
+        int W = picture.width(), H = picture.height();
+        if (H == 1) {
+            throw new IllegalArgumentException("failed to remove seam: width or height of current picture is 1");
+        }
+
         Picture current = new Picture(W, H - 1);
+
         for (int i = 0; i < W; i++) {
             for (int j = 0; j < H - 1; j++) {
                 if (j < seam[i]) current.set(i, j, color[i][j]);
                 else current.set(i, j, color[i][j + 1]);
             }
         }
+
         picture = current;
         color = color(picture);
     }
@@ -134,26 +141,23 @@ public class SeamCarver {
         if (seam == null) {
             throw new IllegalArgumentException("seam " + seam + " is null");
         }
-        int W = picture.width();
-        int H = picture.height();
+
+        int W = picture.width(), H = picture.height();
         int len = seam.length;
         if (len != W) {
             throw new IllegalArgumentException("seam length " + len + " is not " + W);
         }
+
         int prev = -1;
         for (int i = 0; i < len; i++) {
             int s = seam[i];
             if (s < 0 || s > H - 1) {
-                throw new IllegalArgumentException("seam entry "
-                                                   + s
-                                                   + " is not between 0 and "
-                                                   + (H - 1));
+                throw new IllegalArgumentException("seam entry " + s
+                                                   + " is not between 0 and " + (H - 1));
             }
             if (prev != -1 && Math.abs(prev - s) > 1) {
                 throw new IllegalArgumentException("2 adjacent entries "
-                                                   + prev
-                                                   + " and "
-                                                   + s
+                                                   + prev + " and " + s
                                                    + " differ by more than 1");
             }
             prev = s;
@@ -198,6 +202,34 @@ public class SeamCarver {
     }
 
     public static void main(String[] args) {
+        if (args.length != 3) {
+            StdOut.println("java SeamCarver test [image filename] [num columns to remove] [num rows to remove]");
+            return;
+        }
 
+        Picture picture = new Picture(args[0]);
+        int removeColumns = Integer.parseInt(args[1]);
+        int removeRows = Integer.parseInt(args[2]);
+
+        StdOut.printf("%d-by-%d image\n", picture.width(), picture.height());
+        SeamCarver sc = new SeamCarver(picture);
+
+        Stopwatch sw = new Stopwatch();
+ 
+        for (int i = 0; i < removeRows; i++) {
+            int[] horizontalSeam = sc.findHorizontalSeam();
+            sc.removeHorizontalSeam(horizontalSeam);
+        }
+
+        for (int i = 0; i < removeColumns; i++) {
+            int[] verticalSeam = sc.findVerticalSeam();
+            sc.removeVerticalSeam(verticalSeam);
+        }
+
+        StdOut.printf("new image size is %d columns by %d rows\n", sc.width(), sc.height());
+
+        StdOut.println("Time elapsed: " + sw.elapsedTime() + " seconds.");
+        picture.show();
+        sc.picture.show();
     }
 }
